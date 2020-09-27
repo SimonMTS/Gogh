@@ -635,17 +635,18 @@ apply_st() {
   echo "";
   echo "Suckless terminal's config.h will be changed, and recompiled. !!beware!!";
   read -r -p "Continue? [y/N] " -n 1 ST_APPLY_CURR_THEME
+  echo "";
 
   if [[ ${ST_APPLY_CURR_THEME::1} =~ ^(y|Y)$ ]]; then
-    new_var="static const char \*colorname\[\]=\{\"${COLOR_01}\", \"${COLOR_02}\", \"${COLOR_03}\", \"${COLOR_04}\", \"${COLOR_05}\", \"${COLOR_06}\", \"${COLOR_07}\", \"${COLOR_08}\", \"${COLOR_09}\", \"${COLOR_10}\", \"${COLOR_11}\", \"${COLOR_12}\", \"${COLOR_13}\", \"${COLOR_14}\", \"${COLOR_15}\", \"${COLOR_16}\",[255] = 0,\"${FOREGROUND_COLOR}\",\"${CURSOR_COLOR}\",\"${BACKGROUND_COLOR}\",\};//Gogh";
+    new_var="static const char *colorname[]={\"${COLOR_01}\", \"${COLOR_02}\", \"${COLOR_03}\", \"${COLOR_04}\", \"${COLOR_05}\", \"${COLOR_06}\", \"${COLOR_07}\", \"${COLOR_08}\", \"${COLOR_09}\", \"${COLOR_10}\", \"${COLOR_11}\", \"${COLOR_12}\", \"${COLOR_13}\", \"${COLOR_14}\", \"${COLOR_15}\", \"${COLOR_16}\",[255] = 0,\"${FOREGROUND_COLOR}\",\"${CURSOR_COLOR}\",\"${BACKGROUND_COLOR}\",};//Gogh";
 
     # if Gogh previously placed color line replace that, 
     # otherwise rename original color line add new color line to start of file
     if [[ $(grep Gogh $config | wc -l) > 0 ]]; then
-      sed -i -e "s/static const char \*colorname\[\]={\".*};/GOGH_REPLACE/" $config;
+      sed -i -e "s|static const char \*colorname\[\]={\".*};\/\/Gogh|GOGH_REPLACE|" $config;
       sed -i -e "s|GOGH_REPLACE|${new_var}|" $config;
     else
-      sed -i -e "s/static const char \*colorname\[\] = {/static const char \*colorname_old\[\] = {\n/" $config;
+      sed -i -e "s/static const char \*colorname\[\] = {/static const char \*colorname_old\[\] = {/" $config;
       cp $config $config_old && cat <(echo "$new_var") $config_old > $config && rm $config_old;
     fi
 
