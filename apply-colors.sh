@@ -756,6 +756,7 @@ case "${TERMINAL}" in
     "   gnome-terminal"                                       \
     "   tilix"                                                \
     "   xfce4-terminal"                                       \
+    "   suckless-terminal"                                    \
     ""                                                        \
     "If you believe you have recieved this message in error," \
     "try manually setting \`TERMINAL', hint: ps -h -o comm -p \$PPID"
