@@ -22,6 +22,7 @@ declare -a THEMES=(
   'afterglow.sh'
   'alien-blood.sh'
   'argonaut.sh'
+  'argonaut-black.sh'
   'arthur.sh'
   'atom.sh'
   'azu.sh'
@@ -212,7 +213,7 @@ declare -a THEMES=(
 )
 
 # Allow developer to change url to forked url for easier testing
-BASE_URL=${BASE_URL:-"https://raw.githubusercontent.com/Mayccoll/Gogh/master"}
+BASE_URL=${BASE_URL:-"https://raw.githubusercontent.com/SimonMTS/Gogh/master"}
 PROGRESS_URL="https://raw.githubusercontent.com/phenonymous/shell-progressbar/1.0/progress.sh"
 
 capitalize() {
@@ -290,7 +291,7 @@ if [[ ${COLUMNS:-$(tput cols)} -ge 80 ]]; then
 
 
   printf '%b\n' "${gogh_str}"
-  sleep 2.5
+  sleep 0
 else
   echo -e "\nGogh\n"
   for c in {0..15}; do

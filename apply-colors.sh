@@ -623,6 +623,31 @@ apply_xfce4-terminal() {
     exit 0
 }
 
+apply_st() {
+  echo "Suckless terminal's config.h has to be found, changed, and recompiled. !! beware !!";
+  read -r -p "Continue? [y/N] " -n 1 ST_APPLY_CURR_THEME
+  if [[ ${ST_APPLY_CURR_THEME::1} =~ ^(y|Y)$ ]]; then
+    echo "";
+    path=$(sudo find / -name 'st.c' -print -quit | sed s/st.c//);
+    config="${path}config.h";
+    config_old="${path}config.h.old";
+
+    echo "updating config at: $config";
+      # remove previous custom colors, if they exist
+      sed -i -e "s/static const char \*colorname\[\] = {\".*};//" $config;
+      # rename old colors
+      sed -i -e "s/static const char \*colorname\[\] = {/static const char \*colorname_old\[\] = {\n/" $config;
+      # add custom colors
+      new_var="static const char *colorname[] = {\"${COLOR_01}\", \"${COLOR_02}\", \"${COLOR_03}\", \"${COLOR_04}\", \"${COLOR_05}\", \"${COLOR_06}\", \"${COLOR_07}\", \"${COLOR_08}\", \"${COLOR_09}\", \"${COLOR_10}\", \"${COLOR_11}\", \"${COLOR_12}\", \"${COLOR_13}\", \"${COLOR_14}\", \"${COLOR_15}\", \"${COLOR_16}\",[255] = 0,\"${FOREGROUND_COLOR}\",\"${CURSOR_COLOR}\",\"${BACKGROUND_COLOR}\",};";
+      cp $config $config_old && cat <(echo "$new_var") $config_old > $config && rm $config_old;
+
+    #echo "recompiling...";
+    sudo make clean -C $path && sudo make -C $path && sudo make clean install -C $path;
+  else
+    exit;
+  fi
+}
+
 [[ -n "${UUIDGEN}" ]] && PROFILE_SLUG="$(uuidgen)"
 
 case "${TERMINAL}" in
@@ -633,6 +658,10 @@ case "${TERMINAL}" in
       PROFILE_KEY="io.elementary.terminal.settings"
     fi
     apply_elementary
+    ;;
+
+  st )
+    apply_st
     ;;
 
   iTerm.app )
