@@ -624,24 +624,31 @@ apply_xfce4-terminal() {
 }
 
 apply_st() {
-  echo "Suckless terminal's config.h has to be found, changed, and recompiled. !! beware !!";
+  echo "Root is needed to \"find\" your st config.h";
+  path=$(sudo find / -name 'st.c' -print -quit | sed s/st.c//);
+  echo "";
+  config="${path}config.h";
+  config_old="${path}config.h.old";
+
+  echo "updating config at: $config";
+  echo "calling make (clean/install) in: $path";
+  echo "";
+  echo "Suckless terminal's config.h will be changed, and recompiled. !!beware!!";
   read -r -p "Continue? [y/N] " -n 1 ST_APPLY_CURR_THEME
+
   if [[ ${ST_APPLY_CURR_THEME::1} =~ ^(y|Y)$ ]]; then
-    echo "";
-    path=$(sudo find / -name 'st.c' -print -quit | sed s/st.c//);
-    config="${path}config.h";
-    config_old="${path}config.h.old";
+    new_var="static const char \*colorname\[\]=\{\"${COLOR_01}\", \"${COLOR_02}\", \"${COLOR_03}\", \"${COLOR_04}\", \"${COLOR_05}\", \"${COLOR_06}\", \"${COLOR_07}\", \"${COLOR_08}\", \"${COLOR_09}\", \"${COLOR_10}\", \"${COLOR_11}\", \"${COLOR_12}\", \"${COLOR_13}\", \"${COLOR_14}\", \"${COLOR_15}\", \"${COLOR_16}\",[255] = 0,\"${FOREGROUND_COLOR}\",\"${CURSOR_COLOR}\",\"${BACKGROUND_COLOR}\",\};//Gogh";
 
-    echo "updating config at: $config";
-      # remove previous custom colors, if they exist
-      sed -i -e "s/static const char \*colorname\[\] = {\".*};//" $config;
-      # rename old colors
+    # if Gogh previously placed color line replace that, 
+    # otherwise rename original color line add new color line to start of file
+    if [[ $(grep Gogh $config | wc -l) > 0 ]]; then
+      sed -i -e "s/static const char \*colorname\[\]={\".*};/GOGH_REPLACE/" $config;
+      sed -i -e "s|GOGH_REPLACE|${new_var}|" $config;
+    else
       sed -i -e "s/static const char \*colorname\[\] = {/static const char \*colorname_old\[\] = {\n/" $config;
-      # add custom colors
-      new_var="static const char *colorname[] = {\"${COLOR_01}\", \"${COLOR_02}\", \"${COLOR_03}\", \"${COLOR_04}\", \"${COLOR_05}\", \"${COLOR_06}\", \"${COLOR_07}\", \"${COLOR_08}\", \"${COLOR_09}\", \"${COLOR_10}\", \"${COLOR_11}\", \"${COLOR_12}\", \"${COLOR_13}\", \"${COLOR_14}\", \"${COLOR_15}\", \"${COLOR_16}\",[255] = 0,\"${FOREGROUND_COLOR}\",\"${CURSOR_COLOR}\",\"${BACKGROUND_COLOR}\",};";
       cp $config $config_old && cat <(echo "$new_var") $config_old > $config && rm $config_old;
+    fi
 
-    #echo "recompiling...";
     sudo make clean -C $path && sudo make -C $path && sudo make clean install -C $path;
   else
     exit;
